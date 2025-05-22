@@ -1,17 +1,28 @@
-import { Route, Routes, Navigate } from "react-router-dom";
-import { TodoList } from "./pages/TodoList";
-import { TodoDetails } from "./pages/TodoDetails";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { Suspense, lazy } from "react";
 
-// Problems
-// 1. The detail page is imported eagerly, so its code ships in the initial bundle.
-// 2. There is also no ErrorBoundary or Suspense fallback.
+import { ErrorBoundary } from "./components/ErrorBoundary";
+import { TodoList } from "./pages/TodoList";
+
+// Code‑split the heavy detail route
+const TodoDetails = lazy(() => import("./pages/TodoDetails"));
 
 export default function App() {
     return (
-        <Routes>
-            <Route path="/" element={<TodoList />} />
-            <Route path="/todo/:id" element={<TodoDetails />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <ErrorBoundary>
+            <Suspense
+                fallback={
+                    <div className="flex items-center justify-center h-screen text-xl font-semibold">
+                        Loading…
+                    </div>
+                }
+            >
+                <Routes>
+                    <Route path="/" element={<TodoList />} />
+                    <Route path="/todo/:id" element={<TodoDetails />} />
+                    <Route path="*" element={<Navigate to="/" />} />
+                </Routes>
+            </Suspense>
+        </ErrorBoundary>
     );
 }

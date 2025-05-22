@@ -1,19 +1,20 @@
+import { useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
+
 import { todos } from "../data/todos";
 
-// Problems
-// 1. Heavy synchronous work (finding related todos) runs inside the component body on every render, slowing first paint.
-// 2. This file is also eagerly loaded, multiplying the cost.
-
-export const TodoDetails = () => {
+export default function TodoDetails() {
     const { id } = useParams();
     const todo = todos.find((t) => t.id === Number(id));
 
-    let sum = 0;
-
-    for (let i = 0; i < 1e8; i++) {
-        sum += i;
-    }
+    // Expensive calculation (mock) memoised
+    const related = useMemo(() => {
+        // Pretend heavy work
+        const word = todo?.title.split(" ")[0] ?? "";
+        return todos
+            .filter((t) => t.title.startsWith(word) && t.id !== todo?.id)
+            .slice(0, 5);
+    }, [todo]);
 
     if (!todo) return <p>Todo is not found</p>;
 
@@ -24,7 +25,11 @@ export const TodoDetails = () => {
             </Link>
             <h2 className="text-xl mt-4 mb-2">{todo.title}</h2>
             <p className="mb-4 text-gray-700">{todo.description}</p>
-            <p>Count heavy computation: {sum}</p>
+            <ul className="list-disc list-inside">
+                {related.map((r) => (
+                    <li key={r.id}>{r.title}</li>
+                ))}
+            </ul>
         </div>
     );
-};
+}

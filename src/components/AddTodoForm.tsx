@@ -1,36 +1,29 @@
 import { type FormEvent, useState } from "react";
 import { type ITodo } from "../data/todos";
 
-// Problems
-// 1. handleSubmit is async but doesn’t await the mocked API call, causing a race condition that can double‑add items.
-
 interface IAddTodoFormProps {
-    readonly onAdd: (todo: ITodo) => void;
+    readonly onAdd: (todo: ITodo) => Promise<void>;
 }
 
 export const AddTodoForm = ({ onAdd }: IAddTodoFormProps) => {
     const [title, setTitle] = useState("");
+    const [loading, setLoading] = useState(false);
 
-    async function handleSubmit(e: FormEvent) {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
 
         if (!title.trim()) return;
 
-        fakePost(title);
-        fakePost(title);
+        setLoading(true);
 
-        setTitle("");
-    }
-
-    function fakePost(newTitle: string) {
-        const newTodo: ITodo = {
-            id: Date.now(),
-            title: newTitle,
-            completed: false,
-            description: "New todo description",
-        };
-        onAdd(newTodo);
-    }
+        try {
+            // now awaited — no duplicates
+            await onAdd({ id: Date.now(), title, completed: false });
+            setTitle("");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <form onSubmit={handleSubmit} className="flex gap-2 mb-4">
@@ -44,7 +37,7 @@ export const AddTodoForm = ({ onAdd }: IAddTodoFormProps) => {
                 type="submit"
                 className="bg-green-500 text-white px-4 rounded"
             >
-                Add
+                {loading ? "Adding…" : "Add"}
             </button>
         </form>
     );
