@@ -13,3 +13,8 @@ npm i
 ```bash
 npm run dev
 ```
+
+ ## Difference 
+
+There two branches: `problems` and `optimized`. Please, look both of them and try to compare.
+For example, you can create a diff between them: https://github.com/maksugr/debugging-example/compare/problems...optimized.
